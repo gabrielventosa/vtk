@@ -141,14 +141,14 @@ public:
 };
 
 template <int NumComps, typename ArrayT, typename APIType = typename vtk::GetAPIType<ArrayT>>
-class AllValuesMinAndMax : public MinAndMax<APIType, NumComps>
+class vtkAllValuesMinAndMax : public MinAndMax<APIType, NumComps>
 {
 private:
   using MinAndMaxT = MinAndMax<APIType, NumComps>;
   ArrayT* Array;
 
 public:
-  AllValuesMinAndMax(ArrayT* array)
+  vtkAllValuesMinAndMax(ArrayT* array)
     : MinAndMaxT()
     , Array(array)
   {
@@ -210,14 +210,14 @@ public:
 };
 
 template <typename ArrayT, typename APIType = typename vtk::GetAPIType<ArrayT>>
-class MagnitudeAllValuesMinAndMax : public MinAndMax<APIType, 1>
+class MagnitudevtkAllValuesMinAndMax : public MinAndMax<APIType, 1>
 {
 private:
   using MinAndMaxT = MinAndMax<APIType, 1>;
   ArrayT* Array;
 
 public:
-  MagnitudeAllValuesMinAndMax(ArrayT* array)
+  MagnitudevtkAllValuesMinAndMax(ArrayT* array)
     : MinAndMaxT()
     , Array(array)
   {
@@ -301,9 +301,9 @@ template <int NumComps>
 struct ComputeScalarRange
 {
   template <class ArrayT, typename RangeValueType>
-  bool operator()(ArrayT* array, RangeValueType* ranges, AllValues)
+  bool operator()(ArrayT* array, RangeValueType* ranges, vtkAllValues)
   {
-    AllValuesMinAndMax<NumComps, ArrayT> minmax(array);
+    vtkAllValuesMinAndMax<NumComps, ArrayT> minmax(array);
     vtkSMPTools::For(0, array->GetNumberOfTuples(), minmax);
     minmax.CopyRanges(ranges);
     return true;
@@ -370,13 +370,13 @@ public:
 };
 
 template <typename ArrayT, typename APIType = typename vtk::GetAPIType<ArrayT>>
-class AllValuesGenericMinAndMax : public GenericMinAndMax<ArrayT, APIType>
+class vtkAllValuesGenericMinAndMax : public GenericMinAndMax<ArrayT, APIType>
 {
 private:
   using MinAndMaxT = GenericMinAndMax<ArrayT, APIType>;
 
 public:
-  AllValuesGenericMinAndMax(ArrayT* array)
+  vtkAllValuesGenericMinAndMax(ArrayT* array)
     : MinAndMaxT(array)
   {
   }
@@ -435,9 +435,9 @@ public:
 };
 
 template <class ArrayT, typename RangeValueType>
-bool GenericComputeScalarRange(ArrayT* array, RangeValueType* ranges, AllValues)
+bool GenericComputeScalarRange(ArrayT* array, RangeValueType* ranges, vtkAllValues)
 {
-  AllValuesGenericMinAndMax<ArrayT> minmax(array);
+  vtkAllValuesGenericMinAndMax<ArrayT> minmax(array);
   vtkSMPTools::For(0, array->GetNumberOfTuples(), minmax);
   minmax.CopyRanges(ranges);
   return true;
@@ -518,7 +518,7 @@ bool DoComputeScalarRange(ArrayT* array, RangeValueType* ranges, ValueType tag)
 //----------------------------------------------------------------------------
 // generic implementation that operates on ValueType.
 template <typename ArrayT, typename RangeValueType>
-bool DoComputeVectorRange(ArrayT* array, RangeValueType range[2], AllValues)
+bool DoComputeVectorRange(ArrayT* array, RangeValueType range[2], vtkAllValues)
 {
   range[0] = vtkTypeTraits<RangeValueType>::Max();
   range[1] = vtkTypeTraits<RangeValueType>::Min();
@@ -533,7 +533,7 @@ bool DoComputeVectorRange(ArrayT* array, RangeValueType range[2], AllValues)
   // Always compute at double precision for vector magnitudes. This will
   // give precision errors on large 64-bit ints, but magnitudes aren't usually
   // computed for those.
-  MagnitudeAllValuesMinAndMax<ArrayT, double> MinAndMax(array);
+  MagnitudevtkAllValuesMinAndMax<ArrayT, double> MinAndMax(array);
   vtkSMPTools::For(0, numTuples, MinAndMax);
   MinAndMax.CopyRanges(range);
   return true;
